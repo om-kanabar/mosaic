@@ -14,6 +14,8 @@ $`x^{(j)}`$ : Sample $`j`$ in $`D`$
 
 $`U`$ : List of already used pairs of $`\{i,j\}`$.
 
+$`P`$ : $`D-U`$ : List of unused samples in $`D`$
+
 $`s^{(i)}`$ : The starting state of sample $`x^{(i)}`$
 
 $`x_m^{(i)}`$ :  the $m$ᵗʰ observation in $`x^{(i)}`$
@@ -105,3 +107,4 @@ j \sim \{1,2,...,N\} \setminus \{i\}
 ```math
 D' = \text{Mosaic}(D,L)
 ```
+
