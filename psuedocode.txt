@@ -1,0 +1,55 @@
+import dataset as D
+import Numpy
+import Matplotlib
+import rich
+import Pytorch
+
+# setup for datasets
+
+U = []
+P = D
+
+# w defines how much Mosaic will look at for augmentation TESTING IS REQUIRED
+w = ?
+
+# will still work on this
+
+def plausability(z):
+    return plaus_score
+
+# updates P and U to make sure that no repetition in samples occur
+
+# true for add, false for remove 
+
+def update_sets(i, z=True):
+    if !D or/and !U or/and !i
+        return
+    elif z == True:
+        U.add(i)
+    else:
+        U.remove(i)
+    P = D-U
+    return
+
+# selects samples
+
+def select_samples():
+    i = random sample from P
+    updateLists(i)
+    j = random sample from P
+    updateLists(j)
+    return [i,j]
+
+# tests samples by finding line of best fit
+
+def initial_comparison(i,j):
+    m_i = slope for i
+    m_j = slope for j
+    CSV.Save(m_j, m_i) as a pair that can be easily graphed with Matplotlib 
+    if |m_i-m_j <= v:
+        return [i,j]
+    else:
+        inital_comparison(*select_samples())
+
+# slides window w over
+

@@ -20,19 +20,21 @@ $`s^{(i)}`$ : The starting state of sample $`x^{(i)}`$
 
 $`x_m^{(i)}`$ :  the $m$ᵗʰ observation in $`x^{(i)}`$
 
-$`T`$ : The fixed sample length in terms of amount of observations .
-
 $`k`$ : Split index in the first sample
 
 $`r`$ : Split index in the second sample
 
 $`w`$ : Comparison window length used by Mosaic to determine $`r`$
 
+$`v`$ : The maximum threshold for the difference in slopes for the line of best fit.
+
 $`z^{(i)}`$ : the $`i`$ᵗʰ synthetic sample made by Mosaic
 
 $`z_m^{(i)}`$ : The $`m`$ᵗʰ observation in synthetic sample $`z^{(i)}`$
 
 $`L`$ : Number of generated samples the user wants
+
+$`\beta^{(i)}`$ : The line of best fit for sample $`x^{(i)}`$
 
 # Example Data
 
