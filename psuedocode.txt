@@ -8,13 +8,12 @@ import Pytorch
 
 U = []
 P = D
-
-# w defines how much Mosaic will look at for augmentation TESTING IS REQUIRED
-w = ?
+D' = []
 
 # will still work on this
 
 def plausability(z):
+
     return plaus_score
 
 # updates P and U to make sure that no repetition in samples occur
@@ -49,7 +48,63 @@ def initial_comparison(i,j):
     if |m_i-m_j <= v:
         return [i,j]
     else:
+        updateLists(j, False)
+        updateLists(i, False)
         inital_comparison(*select_samples())
 
-# slides window w over
+def crossing_point(i, j):
+    correlation = CrossCorrelation(i, j)
+    best_offsets = top T values of correlation
+    cross_point = choose best crossing point randomly out of best_offsets 
+    return crossing_point;
+
+def combine(cross_point, i, j):
+    # 1. Align the signals using the offset (same as before)
+    if cross_point >= 0:
+        aligned_i = i
+        aligned_j = pad_beginning(j, amount=cross_point)
+    else:
+        aligned_i = pad_beginning(i, amount=abs(cross_point))
+        aligned_j = j
+        
+    max_len = max(length(aligned_i), length(aligned_j))
+    aligned_i = pad_end(aligned_i, to_length=max_len)
+    aligned_j = pad_end(aligned_j, to_length=max_len)
+    
+    overlap_start = max(0, cross_point if cross_point >= 0 else 0)
+    overlap_end = min(length(i), length(j) + (cross_point if cross_point >= 0 else 0))
+    overlap_length = overlap_end - overlap_start
+    
+    x = []
+    
+    for index from 0 to max_len - 1:
+        val_i = aligned_i[index]
+        val_j = aligned_j[index]
+        
+        if val_i exists and val_j exists:
+            weight_j = (index - overlap_start) / overlap_length
+            weight_i = 1.0 - weight_j
+            
+            blended_val = (val_i * weight_i) + (val_j * weight_j)
+            x.append(blended_val)
+        elif val_i exists:
+            x.append(val_i)
+        else:
+            x.append(val_j)
+            
+    CSV.Save(x) 
+    return x
+
+
+Mosaic():
+    selected_samples = select_samples()
+    selected_samples = initial_comparison(*selected_samples)
+    crossing_point = crossing_point(*selected_samples)
+    z = combine(crossing_point, *selected_samples)
+    plaus_score = plausability(z)
+    if plaus_score < something: Mosaic()
+    else:
+        D'.add(z);
+        return
+    return
 
