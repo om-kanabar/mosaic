@@ -36,6 +36,8 @@ $`L`$ : Number of generated samples the user wants
 
 $`\beta^{(i)}`$ : The line of best fit for sample $`x^{(i)}`$
 
+$`T`$ : Temperature : The number of points the user wants to randomly choose between.  
+
 # Example Data
 
 ### Example Dataset
