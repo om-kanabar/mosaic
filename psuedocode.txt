@@ -34,9 +34,9 @@ def update_sets(i, z=True):
 
 def select_samples():
     i = random sample from P
-    updateLists(i)
+    update_sets(i)
     j = random sample from P
-    updateLists(j)
+    update_sets(j)
     return [i,j]
 
 # tests samples by finding line of best fit
@@ -48,8 +48,8 @@ def initial_comparison(i,j):
     if |m_i-m_j <= v:
         return [i,j]
     else:
-        updateLists(j, False)
-        updateLists(i, False)
+        update_sets(j, False)
+        update_sets(i, False)
         inital_comparison(*select_samples())
 
 def crossing_point(i, j):
