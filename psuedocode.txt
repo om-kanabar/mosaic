@@ -1,110 +1,128 @@
 import dataset as D
 import Numpy
-import Matplotlib
 import rich
 import Pytorch
 
-# setup for datasets
-
-U = []
-P = D
-D' = []
-
 # will still work on this
 
-def plausability(z):
-
+def _plausability(z):
     return plaus_score
-
-# updates P and U to make sure that no repetition in samples occur
 
 # true for add, false for remove 
 
-def update_sets(i, z=True):
-    if !D or/and !U or/and !i
+def _update_sets(D, U, i, j, z=True):
+    if !D or/and !U or/and !i or/and !j
         return
     elif z == True:
-        U.add(i)
+        U.add({i,j})
     else:
-        U.remove(i)
-    P = D-U
+        U.remove({i,j})
     return
 
 # selects samples
 
-def select_samples():
-    i = random sample from P
-    update_sets(i)
-    j = random sample from P
-    update_sets(j)
+def _select_samples(D, U):
+    i = random sample from U
+    j = random sample from U
+    if {i,j} in U:
+        _select_samples(D, U)
+
+    update_sets(D, U, i, j)
     return [i,j]
 
 # tests samples by finding line of best fit
 
-def initial_comparison(i,j):
+def _initial_comparison(D, U, i, j):
     m_i = slope for i
     m_j = slope for j
     CSV.Save(m_j, m_i) as a pair that can be easily graphed with Matplotlib 
     if |m_i-m_j <= v:
         return [i,j]
     else:
-        update_sets(j, False)
-        update_sets(i, False)
+        update_sets(D, U, i, j, False)
         inital_comparison(*select_samples())
 
-def crossing_point(i, j):
+def _crossing_point(i, j):
     correlation = CrossCorrelation(i, j)
     best_offsets = top T values of correlation
-    cross_point = choose best crossing point randomly out of best_offsets 
-    return crossing_point;
+    shift = choose best crossing point randomly out of best_offsets 
+    return shift;
 
-def combine(cross_point, i, j):
-    # 1. Align the signals using the offset (same as before)
-    if cross_point >= 0:
-        aligned_i = i
-        aligned_j = pad_beginning(j, amount=cross_point)
-    else:
-        aligned_i = pad_beginning(i, amount=abs(cross_point))
-        aligned_j = j
-        
-    max_len = max(length(aligned_i), length(aligned_j))
-    aligned_i = pad_end(aligned_i, to_length=max_len)
-    aligned_j = pad_end(aligned_j, to_length=max_len)
+def _combine(shift, i, j):
     
-    overlap_start = max(0, cross_point if cross_point >= 0 else 0)
-    overlap_end = min(length(i), length(j) + (cross_point if cross_point >= 0 else 0))
-    overlap_length = overlap_end - overlap_start
+    # Calculate exactly where the overlap occurs
+    if shift >= 0:
+        overlap_start_i = shift
+        overlap_start_j = 0
+    else:
+        overlap_start_i = 0
+        overlap_start_j = abs(shift)
+        
+    # Determine the total length of the combined signal
+    # to the end of the second signal
+    total_len = max(length(i), length(j) + shift) if shift >= 0 else max(length(j), length(i) + abs(shift))
+    
+    # Calculate how long the overlapping region actually is
+    overlap_length = min(length(i) - overlap_start_i, length(j) - overlap_start_j)
     
     x = []
     
-    for index from 0 to max_len - 1:
-        val_i = aligned_i[index]
-        val_j = aligned_j[index]
+    for idx from 0 to total_len - 1:
+        # Determine the local index for each individual signal
+        idx_i = idx
+        idx_j = idx - shift
         
-        if val_i exists and val_j exists:
-            weight_j = (index - overlap_start) / overlap_length
+        # Check if the current index falls within BOTH signals (Overlap / Blending Zone)
+        if (0 <= idx_i < length(i)) and (0 <= idx_j < length(j)):
+            # Linear fade: weight_j goes from 0 to 1 across the overlap length
+            weight_j = (idx_i - overlap_start_i) / overlap_length
             weight_i = 1.0 - weight_j
             
-            blended_val = (val_i * weight_i) + (val_j * weight_j)
+            blended_val = (i[idx_i] * weight_i) + (j[idx_j] * weight_j)
             x.append(blended_val)
-        elif val_i exists:
-            x.append(val_i)
-        else:
-            x.append(val_j)
             
+        # Check if the index only exists in signal i
+        elif 0 <= idx_i < length(i):
+            x.append(i[idx_i])
+            
+        # Check if the index only exists in signal j
+        elif 0 <= idx_j < length(j):
+            x.append(j[idx_j])
+
     CSV.Save(x) 
     return x
 
 
-Mosaic():
-    selected_samples = select_samples()
-    selected_samples = initial_comparison(*selected_samples)
-    crossing_point = crossing_point(*selected_samples)
-    z = combine(crossing_point, *selected_samples)
-    plaus_score = plausability(z)
-    if plaus_score < something: Mosaic()
+
+def Mosaic(D):
+    U = []
+    D_prime = []
+    for x in D:
+        _synthesizeSample(D, U)
+    return D_prime
+    
+    
+def _synthesizeSample(D, U)
+    selected_samples = _select_samples(D, U)
+    selected_samples = _initial_comparison(D, U, *selected_samples)
+    shift = _crossing_point(*selected_samples)
+    z = _combine(shift, *selected_samples)
+    plaus_score = _plausability(z)
+    if plaus_score < something: 
+        _synthesizeSample(D)
     else:
-        D'.add(z);
-        return
+        D_prime.add(z);
     return
 
+
+def synthesizeSingleSample(D)
+    U = []
+    selected_samples = _select_samples(D, U)
+    selected_samples = _initial_comparison(D, U, *selected_samples)
+    shift = _crossing_point(*selected_samples)
+    z = _combine(shift, *selected_samples)
+    plaus_score = _plausability(z)
+    if plaus_score < something: 
+        synthesizeSample(D)
+    else:
+        return z
