@@ -22,8 +22,8 @@ def _update_sets(D, U, i, j, z=True):
 # selects samples
 
 def _select_samples(D, U):
-    i = random sample from U
-    j = random sample from U
+    i = random sample from D
+    j = random sample from D
     if {i,j} in U:
         _select_samples(D, U)
 
@@ -98,18 +98,18 @@ def Mosaic(D):
     U = []
     D_prime = []
     for x in D:
-        _synthesizeSample(D, U)
+        _synthesizeSample(D, U, D_prime)
     return D_prime
     
     
-def _synthesizeSample(D, U)
+def _synthesizeSample(D, U, D_prime)
     selected_samples = _select_samples(D, U)
     selected_samples = _initial_comparison(D, U, *selected_samples)
     shift = _crossing_point(*selected_samples)
     z = _combine(shift, *selected_samples)
     plaus_score = _plausability(z)
     if plaus_score < something: 
-        _synthesizeSample(D)
+        _synthesizeSample(D, U, D_prime)
     else:
         D_prime.add(z);
     return
