@@ -21,26 +21,34 @@ def _update_sets(D, U, i, j, z=True):
 
 # selects samples
 
-def _select_samples(D, U):
+def _select_samples(D, U, attempts=0, max_attempts=1000):
+    if attempts > max_attempts:
+        return None, None
+        
     i = random sample from D
     j = random sample from D
-    if {i,j} in U:
-        _select_samples(D, U)
+    
+    if {i,j} in U or i == j:
+        return _select_samples(D, U, attempts + 1, max_attempts)
 
     update_sets(D, U, i, j)
-    return [i,j]
+    return i, j
 
 # tests samples by finding line of best fit
 
 def _initial_comparison(D, U, i, j):
+    if i is None or j is None:
+        return None, None
+        
     m_i = slope for i
     m_j = slope for j
-    CSV.Save(m_j, m_i) as a pair that can be easily graphed with Matplotlib 
-    if |m_i-m_j <= v:
-        return [i,j]
+    
+    if abs(m_i - m_j) <= v:
+        return i, j
     else:
         update_sets(D, U, i, j, False)
-        inital_comparison(*select_samples())
+        new_i, new_j = _select_samples(D, U)
+        return _initial_comparison(D, U, new_i, new_j)
 
 def _crossing_point(i, j):
     correlation = CrossCorrelation(i, j)
@@ -49,47 +57,43 @@ def _crossing_point(i, j):
     return shift;
 
 def _combine(shift, i, j):
+    # Determine how far to delay the start of each signal relative to a global timeline (t=0)
+    delay_i = abs(shift) if shift < 0 else 0
+    delay_j = shift if shift > 0 else 0
     
-    # Calculate exactly where the overlap occurs
-    if shift >= 0:
-        overlap_start_i = shift
-        overlap_start_j = 0
-    else:
-        overlap_start_i = 0
-        overlap_start_j = abs(shift)
-        
-    # Determine the total length of the combined signal
-    # to the end of the second signal
-    total_len = max(length(i), length(j) + shift) if shift >= 0 else max(length(j), length(i) + abs(shift))
+    total_len = max(length(i) + delay_i, length(j) + delay_j)
     
-    # Calculate how long the overlapping region actually is
-    overlap_length = min(length(i) - overlap_start_i, length(j) - overlap_start_j)
+    # Calculate overlap bounds strictly where both signals have valid data
+    overlap_start = max(delay_i, delay_j)
+    overlap_end = min(delay_i + length(i), delay_j + length(j))
+    overlap_length = overlap_end - overlap_start
     
     x = []
     
-    for idx from 0 to total_len - 1:
-        # Determine the local index for each individual signal
-        idx_i = idx
-        idx_j = idx - shift
+    for t from 0 to total_len - 1:
+        # Map the global time 't' back to the local index of each signal
+        idx_i = t - delay_i
+        idx_j = t - delay_j
         
-        # Check if the current index falls within BOTH signals (Overlap / Blending Zone)
-        if (0 <= idx_i < length(i)) and (0 <= idx_j < length(j)):
-            # Linear fade: weight_j goes from 0 to 1 across the overlap length
-            weight_j = (idx_i - overlap_start_i) / overlap_length
+        in_i = (0 <= idx_i < length(i))
+        in_j = (0 <= idx_j < length(j))
+        
+        if in_i and in_j:
+            if overlap_length > 0:
+                weight_j = (t - overlap_start) / overlap_length
+            else:
+                weight_j = 0.5
+                
             weight_i = 1.0 - weight_j
-            
             blended_val = (i[idx_i] * weight_i) + (j[idx_j] * weight_j)
             x.append(blended_val)
             
-        # Check if the index only exists in signal i
-        elif 0 <= idx_i < length(i):
+        elif in_i:
             x.append(i[idx_i])
-            
-        # Check if the index only exists in signal j
-        elif 0 <= idx_j < length(j):
+        elif in_j:
             x.append(j[idx_j])
-
-    CSV.Save(x) 
+    
+    CSV.save(x)
     return x
 
 
@@ -102,17 +106,24 @@ def Mosaic(D):
     return D_prime
     
     
-def _synthesizeSample(D, U, D_prime)
-    selected_samples = _select_samples(D, U)
-    selected_samples = _initial_comparison(D, U, *selected_samples)
-    shift = _crossing_point(*selected_samples)
-    z = _combine(shift, *selected_samples)
-    plaus_score = _plausability(z)
-    if plaus_score < something: 
-        _synthesizeSample(D, U, D_prime)
+def _synthesizeSample(D, U, D_prime, max_retries=50, retries=0):
+    if retries > max_retries:
+        return
+        
+    i, j = _select_samples(D, U)
+    i, j = _initial_comparison(D, U, i, j)
+    
+    if i is None or j is None:
+        return
+        
+    shift = _crossing_point(i, j)
+    z = _combine(shift, i, j)
+    
+    if _plausability(z) < threshold: 
+        return _synthesizeSample(D, U, D_prime, max_retries, retries + 1)
     else:
-        D_prime.add(z);
-    return
+        D_prime.add(z)
+        return
 
 
 def synthesizeSingleSample(D)
