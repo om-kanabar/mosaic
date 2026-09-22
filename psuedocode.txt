@@ -1,3 +1,5 @@
+(c) Om Kanabar 2026
+
 import dataset as D
 import Numpy
 import rich
