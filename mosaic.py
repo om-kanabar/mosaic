@@ -4,6 +4,8 @@
 # import Pytorch
 import random as rand
 
+v = 0
+
 def _plausability(z):
     pass
 
@@ -36,8 +38,19 @@ def _select_samples(D, U, attempts=0, max_attempts=1000):
 
 
 def _initial_comparison(D, U, i, j):
-    pass
+    if i is None or j is None:
+        return None, None
 
+    m_i = _get_slope(i)
+    m_j = _get_slope(j)
+
+    if abs(m_i-m_j) <= v:
+        return i, j
+    else:
+        _update_sets(D, U, i, j, False)
+        new_i, new_j = _select_samples(D, U)
+        return _initial_comparison(D, U, new_i, new_j)
+    
 
 def _crossing_point(i,j):
     pass
@@ -57,3 +70,23 @@ def _synthesize_sample(D, U, D_prime, max_retries=50, retries=0):
 
 def synthesizeSingleSample(D):
     pass
+
+def _get_slope(i):
+    n = len(i)
+    if n < 2: return None
+        
+    mean_x = (n - 1) / 2
+    mean_y = sum(i) / n
+    
+    num = 0.0
+    den = 0.0
+    
+    for x_val, y_val in enumerate(i):
+        dev_x = x_val - mean_x
+        num += dev_x * (y_val - mean_y)
+        den += dev_x ** 2
+        
+    if den == 0:
+        return 0.0
+        
+    return num / den
