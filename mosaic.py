@@ -1,10 +1,9 @@
 # (c) Om Kanabar 2026
 
-# import rich
-# import Pytorch
 import random as rand
-# import torch
-# import torch.fft
+import scipy
+import csv
+from datetime import datetime
 
 def _plausability(z):
     pass
@@ -60,17 +59,17 @@ def _combine(shift, i , j):
     pass
 
 
-def Mosaic(D, v, threshold, max_retries, x = 1000):
+def Mosaic(D, v, threshold, max_retries=50, x = 1000):
     U = []
     D_prime = []
     for i in range(x):
-        D_prime.add(_synthesize_sample(D, U, D_prime, v, threshold, max_retries))
+        D_prime.add(_synthesize_sample(D, U, v, threshold, max_retries))
 
     return D_prime
     
 
 
-def _synthesize_sample(D, U, D_prime, v, threshold, max_retries=50, retries=0):
+def _synthesize_sample(D, U, v, threshold, max_retries=50, retries=0):
     if retries > max_retries:
         return
 
@@ -84,12 +83,13 @@ def _synthesize_sample(D, U, D_prime, v, threshold, max_retries=50, retries=0):
     z= _combine(shift, i, j)
 
     if _plausability(z) < threshold:
-        return _synthesize_sample(D, U, D_prime, v, threshold, max_retries, retries+1)
+        return _synthesize_sample(D, U, v, threshold, max_retries, retries+1)
     else:
         return z
 
-def synthesizeSingleSample(D):
-    pass
+def synthesizeSingleSample(D, v, threshold, max_retries=50):
+    U =[]
+    return _synthesize_sample(D, U, v, threshold, max_retries)
 
 def _get_slope(i):
     n = len(i)
