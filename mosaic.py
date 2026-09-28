@@ -3,8 +3,8 @@
 # import rich
 # import Pytorch
 import random as rand
-
-v = 0
+# import torch
+# import torch.fft
 
 def _plausability(z):
     pass
@@ -37,7 +37,7 @@ def _select_samples(D, U, attempts=0, max_attempts=1000):
     return i, j
 
 
-def _initial_comparison(D, U, i, j):
+def _initial_comparison(D, U, i, j, v):
     if i is None or j is None:
         return None, None
 
@@ -60,13 +60,33 @@ def _combine(shift, i , j):
     pass
 
 
-def Mosaic(D):
-    pass
+def Mosaic(D, v, threshold, max_retries, x = 1000):
+    U = []
+    D_prime = []
+    for i in range(x):
+        D_prime.add(_synthesize_sample(D, U, D_prime, v, threshold, max_retries))
+
+    return D_prime
+    
 
 
-def _synthesize_sample(D, U, D_prime, max_retries=50, retries=0):
-    pass
+def _synthesize_sample(D, U, D_prime, v, threshold, max_retries=50, retries=0):
+    if retries > max_retries:
+        return
 
+    i, j = _select_samples(D, U)
+    i, j = _initial_comparison(D, U, i, j, v)
+
+    if i is None or j is None:
+        return
+
+    shift = _crossing_point(i,j)
+    z= _combine(shift, i, j)
+
+    if _plausability(z) < threshold:
+        return _synthesize_sample(D, U, D_prime, v, threshold, max_retries, retries+1)
+    else:
+        return z
 
 def synthesizeSingleSample(D):
     pass

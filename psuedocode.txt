@@ -124,8 +124,7 @@ def _synthesizeSample(D, U, D_prime, max_retries=50, retries=0):
     if _plausability(z) < threshold: 
         return _synthesizeSample(D, U, D_prime, max_retries, retries + 1)
     else:
-        D_prime.add(z)
-        return
+        return z
 
 
 def synthesizeSingleSample(D)
