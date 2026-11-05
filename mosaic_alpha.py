@@ -68,7 +68,6 @@ def Mosaic(D, v, threshold, max_retries=50, x = 1000):
     return D_prime
     
 
-
 def _synthesize_sample(D, U, v, threshold, max_retries=50, retries=0):
     if retries > max_retries:
         return
